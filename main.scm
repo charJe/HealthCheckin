@@ -3,7 +3,6 @@
 
 (define seconds-in-hour 3600.0)
 (define seconds-in-day (* seconds-in-hour 24))
-(define seconds-in-week (* seconds-in-day 7))
 (define background-color (color-rgb 30 30 30))
 (define topbar-height 60)
 (define button-height 40)
@@ -11,7 +10,11 @@
 (define padding 7)
 
 (define frequency-selector (make-table))
-(define frequency-options (vector))
+(define frequency-options
+  (vector (map (lambda (str) (dropdown-callback str))
+               (map number->string (list-nums 0 24)))
+          (map (lambda (str) (dropdown-callback str))
+               (map number->string (list-nums 0 365)))))
 (define unit-selector (make-table))
 (define time-selectors (list))
 (define start-time-selector (make-table))
@@ -40,14 +43,15 @@
 
 (define (glgui-title title)
   (let ((x (inexact->exact (floor (/ (glgui-width-get) 4.5)))))
-    (table-set! (glgui-label gui x (- (glgui-height-get) topbar-height -10) (* x 2.5) button-height
-                  title dejavubold_46.fnt White)
-                'align GUI_ALIGNCENTER)))
+    (glgui-widget-set! gui
+        (glgui-label gui x (- (glgui-height-get) topbar-height -10) (* x 2.5) button-height
+          title dejavubold_46.fnt White)
+        'align GUI_ALIGNCENTER)))
 
 (define (dropdown-callback str)
   (lambda (lg lw x y w h s)
-     (if s (glgui:draw-box x y w h Grey))
-     (glgui:draw-text-left (+ x 5) y (- w 10) h str dejavu_25.fnt Black)))
+    (if s (glgui:draw-box x y w h Grey))
+    (glgui:draw-text-left (+ x 5) y (- w 10) h str dejavu_25.fnt Black)))
 
 (define (checkin-page)
   (glgui-clear-all)
@@ -66,7 +70,8 @@
     (map (lambda (label)
            (glgui-widget-set! gui
                (glgui-label gui 0 height (glgui-width-get) 20
-                 label dejavu_25.fnt White) 'align GUI_ALIGNCENTER)
+                 label dejavu_25.fnt White)
+               'align GUI_ALIGNCENTER)
            (set! height (- height 90)))
          (list "Worry" "Anxious" "Restless" "Unable to stop Anxiety" "Irritable" "Not able to relax" "Afraid of something awful")))
   ;; sliders
@@ -78,14 +83,14 @@
                                  0 3 #f White slider-color Grey #f dejavu_18.fnt dejavu_18.fnt #f White)))
                    (glgui-widget-set! gui slider 'showlabels #f)
                    (glgui-widget-set! gui slider 'colorbarright White)
-                   slider)
-                 (set! height (- height 90)))
+                   (set! height (- height 90))
+                   slider))
                (list-nums 0 6))))
   ;; finish button
   (glgui-button-string gui 50 20 (- (glgui-width-get) 100) button-height
     "Finish Check-In" dejavu_25.fnt (lambda (g w t x y)
                                       (save-checkin)
-                                      (post-checkin-popup))))
+                                      (pop-up "Check-in Complete." checkin-page))))
 
 (define (save-checkin)
   (sqlite-query db
@@ -98,33 +103,73 @@
                                (table-ref slider 'value 0))
                              ratings))) ")" )))
 
-(define (post-checkin-popup)
+(define (pop-up message action)
   (let* ((x (/ (glgui-width-get) 7))
          (y (* (glgui-height-get) 2/5))
          (w (* x 5))
          (h (* y 2/3))
          (shadow 5)
-         (container (glgui-container gui 0 0 (glgui-width-get) (- (glgui-height-get) topbar-height)))
-         (message "Check-in Complete."))
+         (container (glgui-container gui 0 0 (glgui-width-get) (- (glgui-height-get) topbar-height))))
     (glgui-box container 0 0 (glgui-width-get) (- (glgui-height-get) topbar-height)
       (color-rgba 0 0 0 0)) ;; block user from clicking other elements
     (glgui-widget-set! container (glgui-box container (+ x shadow) (- y shadow) w h
                                    (color-shade DarkGrey .4)) 'rounded #t)
     (glgui-widget-set! container (glgui-box container x y w h DarkGrey) 'rounded #t)
-    (glgui-label container (+ x margin) (+ y (- h 30 margin)) (- w (* 2 margin)) 20
-      message dejavu_25.fnt Black)
+    
     (glgui-button-string container (+ x (* margin 2)) (+ y margin) (- w (* margin 4)) button-height
-      "OK" dejavu_25.fnt (lambda (g w t x y) (checkin-page)))))
+      "OK" dejavu_25.fnt (lambda (g w t x y) (action)))
+    (table->list (glgui-label-wrapped container (+ x margin) (+ y margin button-height) (- w (* 2 margin)) 140
+                   message dejavu_25.fnt Black))))
 
-(define (export-page) #f)
+(define (export-page)
+  (glgui-clear-all)
+  ;; topbar
+  (glgui-menubar gui 0 (- (glgui-height-get) topbar-height) (glgui-width-get) topbar-height)
+  (glgui-title "Export")
+  (glgui-button-arrow-string gui 10 (- (glgui-height-get) topbar-height -12)
+                             100 button-height
+    #t "Check-In" dejavu_18.fnt (lambda (g w t x y) (settings-page)))
+  (glgui-button-arrow-string gui (- (glgui-width-get) 110) (- (glgui-height-get) topbar-height -12)
+                             100 button-height
+    #f "Settings" dejavu_18.fnt (lambda (g w t x y) (settings-page)))
+  ;; export button
+  (glgui-button-string gui (/ (- (glgui-width-get) 300) 2) (/ (glgui-height-get) 2) 300 button-height
+    "To Spreadsheet" dejavu_25.fnt
+    (lambda (g w t x y)
+      (pop-up (string-append "Your spreadsheet is in " (export-csv) ".")
+              export-page))))
 
-(define (export-content-page message) #f)
+(define (export-csv)
+  (let ((csv (string-append (system-directory) (system-pathseparator) "checkin.csv")))
+    (with-output-to-file csv
+      (lambda ()
+        (print "Year,Month,Day,Time,DOW,Worry,Anxious,Restless,Unable,Irritable,NRelax,Afraid\n")
+        (map (lambda (row)
+               (let* ((timestamp
+                       (list->vector
+                        (string-split (seconds->string (vector-ref row 0)
+                                                       "~Y ~m ~d ~a ~H:~M")
+                                      #\ ))))
+                 (map (lambda (i)
+                        (print (vector-ref timestamp i)) (print ","))
+                      (list-nums 0 4))
+                 (map (lambda (i)
+                        (print (vector-ref row i)) (print ","))
+                      (list-nums 1 6)))
+               (print (vector-ref row 7)) (newline))
+             (map list->vector
+                  (sqlite-query db "select * from checkin 
+                                  order by `time`")))))
+    csv))
 
 (define (settings-page)
   (glgui-clear-all)
   ;; topbar
   (glgui-menubar gui 0 (- (glgui-height-get) topbar-height) (glgui-width-get) topbar-height)
   (glgui-title "Settings")
+  (glgui-button-arrow-string gui 10 (- (glgui-height-get) topbar-height -12)
+                             100 button-height
+    #t "Export" dejavu_18.fnt (lambda (g w t x y) (export-page)))
   (glgui-button-arrow-string gui (- (glgui-width-get) 110) (- (glgui-height-get) topbar-height -12)
                              100 button-height
     #f "Check-In" dejavu_18.fnt (lambda (g w t x y) (checkin-page)))
@@ -139,13 +184,6 @@
           (map (lambda (str) (dropdown-callback str))
                (map number->string (list-nums 0 24)))
           Black White Black))
-  (set! frequency-options
-        (vector (map (lambda (str) (dropdown-callback str))
-                     (map number->string (list-nums 0 24)))
-                (map (lambda (str) (dropdown-callback str))
-                     (map number->string (list-nums 0 365)))
-               (map (lambda (str) (dropdown-callback str))
-                     (map number->string (list-nums 0 52)))))
   (let ((option (vector-ref frequency-options (settings-ref 'unit 0)))
         (frequency (settings-ref 'frequency 0)))
     (table-set! frequency-selector 'current
@@ -162,9 +200,9 @@
   (table-set! unit-selector 'callback
               (lambda (g w t x y)
                 (let ((selected (table-ref unit-selector 'current)))
-                (glgui-show-index time-selectors selected)
-                (glgui-widget-set! gui frequency-selector 'list
-                                   (vector-ref frequency-options selected)))))
+                  (glgui-show-index time-selectors selected)
+                  (glgui-widget-set! gui frequency-selector 'list
+                                     (vector-ref frequency-options selected)))))
   (table-set! unit-selector 'current (settings-ref 'unit 0))
   ;; time selection
   (set! time-selectors
