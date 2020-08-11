@@ -6,4 +6,5 @@ ln_glgui
 settings
 localnotification
 sqlite
+csv
 tcprepl

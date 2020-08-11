@@ -142,25 +142,16 @@
 
 (define (export-csv)
   (let ((csv (string-append (system-directory) (system-pathseparator) "checkin.csv")))
-    (with-output-to-file csv
-      (lambda ()
-        (print "Year,Month,Day,Time,DOW,Worry,Anxious,Restless,Unable,Irritable,NRelax,Afraid\n")
-        (map (lambda (row)
-               (let* ((timestamp
-                       (list->vector
-                        (string-split (seconds->string (vector-ref row 0)
-                                                       "~Y ~m ~d ~a ~H:~M")
-                                      #\ ))))
-                 (map (lambda (i)
-                        (print (vector-ref timestamp i)) (print ","))
-                      (list-nums 0 4))
-                 (map (lambda (i)
-                        (print (vector-ref row i)) (print ","))
-                      (list-nums 1 6)))
-               (print (vector-ref row 7)) (newline))
-             (map list->vector
-                  (sqlite-query db "select * from checkin 
-                                  order by `time`")))))
+    (csv-write csv
+      (cons (list "Year" "Month" "Day" "Time" "DOW" "Worry" "Anxious"
+                  "Restless" "Unable" "Irritable" "NRelax" "Afraid")
+            (map (lambda (row )
+                   (cons (string-split
+                          (seconds->string (car row)
+                                           "~Y ~m ~d ~a ~H:~M") #\ )
+                         (cdr row)))
+                 (sqlite-query db "select * from checkin 
+                                   order by `time`"))))
     csv))
 
 (define (settings-page)
