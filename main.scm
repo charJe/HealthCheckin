@@ -101,7 +101,8 @@
               (string-append sum "," (number->string value)))
             "" (reverse (map (lambda (slider)
                                (table-ref slider 'value 0))
-                             ratings))) ")" )))
+                             ratings))) ")" ))
+  (set-n-notifications))
 
 (define (pop-up message action)
   (let* ((x (/ (glgui-width-get) 7))
@@ -347,8 +348,6 @@
  ;; suspend
  (lambda () (glgui-suspend))
  ;; resume
- (lambda ()
-   (set-n-notifications)
-   (glgui-resume)))
+ (lambda () (glgui-resume)))
 
 ;; eof
