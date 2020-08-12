@@ -129,7 +129,7 @@
   (glgui-title "Export")
   (glgui-button-arrow-string gui 10 (- (glgui-height-get) topbar-height -12)
                              100 button-height
-    #t "Check-In" dejavu_18.fnt (lambda (g w t x y) (settings-page)))
+    #t "Check-In" dejavu_18.fnt (lambda (g w t x y) (checkin-page)))
   (glgui-button-arrow-string gui (- (glgui-width-get) 110) (- (glgui-height-get) topbar-height -12)
                              100 button-height
     #f "Settings" dejavu_18.fnt (lambda (g w t x y) (settings-page)))
