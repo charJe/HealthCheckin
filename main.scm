@@ -96,7 +96,7 @@
 (define (save-checkin)
   (sqlite-query db
     (string-append
-     "insert into checkin values ("
+     "INSERT INTO checkin VALUES ("
      (number->string ##now)
      (foldr (lambda (value sum)
               (string-append sum "," (number->string value)))
@@ -317,7 +317,7 @@
      ;; create checkin-table
      (sqlite-query db "CREATE TABLE IF NOT EXISTS checkin (
                        `time` TIME,
-                       worry FLOAT, anxious FLOAT, restless FLOAT, unable FLOAT,
+                       worry FLOAT, anxious FLOAT, restless FLOAT, racing FLOAT,
                        irritable FLOAT, notRelax FLOAT, afraid FLOAT)"))
    ;; make sure a config directory exists
    (let ((configdirectory (string-append (system-directory) (system-pathseparator) "config")))
