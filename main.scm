@@ -73,7 +73,8 @@
                  label dejavu_25.fnt White)
                'align GUI_ALIGNCENTER)
            (set! height (- height 90)))
-         (list "Worry" "Anxious" "Restless" "Unable to stop Anxiety" "Irritable" "Not able to relax" "Afraid of something awful")))
+         (list "Worry" "Anxious" "Restless" "Racing thoughts" "Irritable"
+               "Not able to relax" "Afraid of an awful event")))
   ;; sliders
   (let ((height (- (glgui-height-get) topbar-height (* margin 2) 50))
         (slider-color (color-rgb #x1b #xb1 #x93)))
