@@ -117,7 +117,7 @@
     (glgui-widget-set! container (glgui-box container (+ x shadow) (- y shadow) w h
                                    (color-shade DarkGrey .4)) 'rounded #t)
     (glgui-widget-set! container (glgui-box container x y w h DarkGrey) 'rounded #t)
-    
+
     (glgui-button-string container (+ x (* margin 2)) (+ y margin) (- w (* margin 4)) button-height
       "OK" dejavu_25.fnt (lambda (g w t x y) (action)))
     (table->list (glgui-label-wrapped container (+ x margin) (+ y margin button-height) (- w (* 2 margin)) 140
@@ -145,14 +145,15 @@
   (let ((csv (string-append (system-directory) (system-pathseparator) "checkin.csv")))
     (csv-write csv
       (cons (list "Year" "Month" "Day" "Time" "DOW" "Worry" "Anxious"
-                  "Restless" "Unable" "Irritable" "NRelax" "Afraid")
-            (map (lambda (row )
-                   (cons (string-split
-                          (seconds->string (car row)
-                                           "~Y ~m ~d ~a ~H:~M") #\ )
-                         (cdr row)))
-                 (sqlite-query db "select * from checkin 
-                                   order by `time`"))))
+                  "Restless" "Racing" "Irritable" "NRelax" "Afraid" "Sum")
+            (map (lambda (row)
+                   (append (string-split
+                            (seconds->string (car row)
+                                             "~Y ~m ~d ~H:~M ~a") #\ )
+                           (cdr row)
+                           (list (apply + (cdr row)))))
+                 (sqlite-query db "SELECT * FROM checkin
+                                   ORDER BY `time`"))))
     csv))
 
 (define (settings-page)
