@@ -1,0 +1,19 @@
+#+title: Health Check-In
+#+author: Charles Jackson
+
+Health Check-In is a mobile application to help people at risk for generalized anxiety disorder track symptoms over time. Health Check-In is best used in conjunction with a therapist to report symptom levels with short periods of time between each report or check-in. This is done by reminding the patient to check-in every so often by rating themselves on a shortened version of the GAD-7. The can then be shared with the therapist before the next session, so the therapist can see the generalized anxiety /over time/ and detect possible triggers.
+
+* Future
+** TODO More reminder options
+** TODO Export to line graph
+** TODO Export to bar graph
+
+* Building
+1. Install [[https://github.com/part-cw/lambdanative/][lambdanative]]
+2. Clone this repository to ~lambdanative/apps/~
+3. Open ~artwork.xcf~ in gimp
+   1. Export to ~artwork.eps~ (with ghostscript)
+   2. Hide the bottom layer (the one with green background)
+   3. Export to ~artwork.png~
+4. Remove ~tcprepl~ from ~MODULES~ or download my [[https://gist.github.com/charJe/2ca7dfd56cfda0ec5c8eced9db1d19bc][gist]] to ~lambdanative/modules/tcprepl/tcprepl.scm~
+5. Follow build instructions for [[https://github.com/part-cw/lambdanative/wiki/Compilation][lambdanative]]
