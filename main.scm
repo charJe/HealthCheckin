@@ -324,7 +324,7 @@
    (let ((configdirectory (string-append (system-directory) (system-pathseparator) "config")))
      (if (not (file-exists? configdirectory))
          (create-directory configdirectory)))
-   (settings-init (list))
+   (settings-init '((start-time . 50400.) (end-time . 93600.)))
    (if (settings-ref 'settings-set)
        (checkin-page)
        (settings-page)))
