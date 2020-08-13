@@ -22,6 +22,11 @@
 (define time-day-selector (make-table))
 (define ratings (list))
 
+(define (time->current-date time)
+  (string->seconds
+   (seconds->string time "~H:~M")
+   "~H:~M"))
+
 (define (list-nums first last)
   ;; first and last are both inclusive
   (let loop ((nums (list)) (num last))
@@ -267,27 +272,19 @@
   (localnotification-cancelall)
   (if (and (settings-ref 'settings-set #f) (> (settings-ref 'frequency) 0))
       (let* ((message "🙂 How are you feeling?")
-             (now ##now)
-             (today (current-date))
-             (midnight (exact->inexact
-                        (srfi19:time-second
-                         (date->time-utc
-                          (make-date 0 0 0 0 (date-day today)
-                                     (date-month today)
-                                     (date-year today)
-                                     (date-zone-offset today)))))))
+             (now ##now))
         (case (settings-ref 'unit)
           ;; hours
           ((0) (let ((space (fl* (exact->inexact (settings-ref 'frequency)) seconds-in-hour))
-                     (start-time (fl+ (settings-ref 'start-time) midnight))
-                     (end-time (fl+ (settings-ref 'end-time) midnight)))
+                     (start-time (time->current-date (settings-ref 'start-time)))
+                     (end-time (time->current-date (settings-ref 'end-time))))
                  (let loop ((n n) (start-time start-time)
                             (time (fl+ (if (< now start-time) start-time now) seconds-in-hour))
                             (end-time (if (> start-time end-time)
                                           (fl+ end-time seconds-in-day)
                                           end-time)))
                    (cond ((= n 0) #!void)
-                         ((>= time end-time) ;; move to the next day
+                         ((> time end-time) ;; move to the next day
                           (loop n (fl+ start-time seconds-in-day) (fl+ start-time seconds-in-day)
                                 (fl+ end-time seconds-in-day)))
                          (else ;; set the notification
@@ -296,11 +293,10 @@
                           (loop (- n 1) start-time (fl+ time space) end-time))))))
           ;; days
           ((1) (let ((space (* (exact->inexact (settings-ref 'frequency)) seconds-in-day)))
-                 (let loop ((n n ) (time (fl+ (settings-ref 'time-day) midnight)))
+                 (let loop ((n n ) (time (time->current-date (settings-ref 'time-day))))
                    (cond ((= n 0) #!void)
                          ((< time now) (loop n (fl+ time space)))
                          (else
-                          (print time) (newline)
                           (localnotification-schedule message time)
                           (loop (- n 1) (fl+ time space)))))))))))
 
