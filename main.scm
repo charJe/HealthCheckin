@@ -270,16 +270,19 @@
 
 (define (set-n-notifications #!optional (n 5))
   (localnotification-cancelall)
-  (if (and (settings-ref 'settings-set #f) (> (settings-ref 'frequency) 0))
-      (let* ((message "🙂 How are you feeling?")
-             (now ##now))
+  (if (and (settings-ref 'settings-set #f)
+           (> (settings-ref 'frequency) 0))
+      (let ((message "🙂 How are you feeling?")
+            (now ##now))
         (case (settings-ref 'unit)
           ;; hours
           ((0) (let ((space (fl* (exact->inexact (settings-ref 'frequency)) seconds-in-hour))
                      (start-time (time->current-date (settings-ref 'start-time)))
                      (end-time (time->current-date (settings-ref 'end-time))))
                  (let loop ((n n) (start-time start-time)
-                            (time (fl+ (if (< now start-time) start-time now) seconds-in-hour))
+                            (time (if (< now start-time)
+                                      start-time
+                                      (fl+ now space)))
                             (end-time (if (> start-time end-time)
                                           (fl+ end-time seconds-in-day)
                                           end-time)))
