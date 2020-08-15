@@ -1,2 +1,3 @@
-artwork.eps
-artwork.png
+*.eps
+*.png
+*.jpg
